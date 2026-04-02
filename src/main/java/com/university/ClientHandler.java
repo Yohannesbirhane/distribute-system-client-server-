@@ -76,9 +76,26 @@ public class ClientHandler implements Runnable {
                     String[] addParts = addArgs.split(";", 4);
                     if (addParts.length < 4) return createErrorResponse("Usage: ADD <name>;<sex>;<age>;<department>");
                     
+                    String name = addParts[0].trim();
+                    String sex = addParts[1].trim();
+                    String dept = addParts[3].trim();
+                    
+                    if (!name.matches("^[a-zA-Z\\s]+$")) {
+                        return createErrorResponse("Invalid Name. Only letters and spaces allowed.");
+                    }
+                    if (!sex.equalsIgnoreCase("Male") && !sex.equalsIgnoreCase("Female")) {
+                        return createErrorResponse("Invalid Sex. Must be 'Male' or 'Female'.");
+                    }
+                    if (dept.isEmpty()) {
+                        return createErrorResponse("Department cannot be empty.");
+                    }
+                    
                     try {
                         int age = Integer.parseInt(addParts[2].trim());
-                        return addStudent(conn, addParts[0].trim(), addParts[1].trim(), age, addParts[3].trim());
+                        if (age < 15 || age > 100) {
+                            return createErrorResponse("Invalid Age. Must be between 15 and 100.");
+                        }
+                        return addStudent(conn, name, sex, age, dept);
                     } catch (NumberFormatException e) {
                         return createErrorResponse("Age must be a valid number.");
                     }

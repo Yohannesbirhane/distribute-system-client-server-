@@ -9,8 +9,21 @@ function App() {
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
 
+  const departments = [
+    "Computer Science",
+    "Mechanical Engineering",
+    "Electrical Engineering",
+    "Information Systems",
+    "Software Engineering",
+    "Civil Engineering",
+    "Physics",
+    "Journalism",
+    "Architecture",
+    "Mathematics"
+  ];
+
   // Form State
-  const [formData, setFormData] = useState({ name: '', sex: 'Male', age: '', department: '' });
+  const [formData, setFormData] = useState({ name: '', sex: 'Male', age: '', department: departments[0] });
   
   // Search State
   const [searchData, setSearchData] = useState({ field: 'name', value: '' });
@@ -40,10 +53,26 @@ function App() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.age || !formData.department) {
+    const { name, age, sex, department } = formData;
+    
+    if (!name || !age || !department) {
       showMessage('Please fill all fields', true);
       return;
     }
+    if (!/^[a-zA-Z\s]+$/.test(name)) {
+      showMessage('Name must contain only letters and spaces.', true);
+      return;
+    }
+    const ageNum = parseInt(age, 10);
+    if (isNaN(ageNum) || ageNum < 15 || ageNum > 100) {
+      showMessage('Age must be a number between 15 and 100.', true);
+      return;
+    }
+    if (sex !== 'Male' && sex !== 'Female') {
+      showMessage('Sex must be Male or Female.', true);
+      return;
+    }
+
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
@@ -53,7 +82,7 @@ function App() {
       const data = await res.json();
       if (data.status === 'SUCCESS') {
         showMessage(data.message);
-        setFormData({ name: '', sex: 'Male', age: '', department: '' });
+        setFormData({ name: '', sex: 'Male', age: '', department: departments[0] });
         fetchStudents();
       } else showMessage(data.message, true);
     } catch (err) {
@@ -111,7 +140,11 @@ function App() {
               </select>
               <input type="number" placeholder="Age" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} />
             </div>
-            <input type="text" placeholder="Department" value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} />
+            <select value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})}>
+              {departments.map((dept, index) => (
+                <option key={index} value={dept}>{dept}</option>
+              ))}
+            </select>
             <button type="submit">Add Student</button>
           </form>
         </div>
